@@ -1,115 +1,183 @@
+const escape = require('..');
+const { describe, it } = global;
 
-var assert = require('assert');
-var escape = require('..');
+describe('escape(fmt, ...)', () => {
 
-describe('escape(fmt, ...)', function(){
-  describe('%s', function(){
-    it('should format as a simple string', function(){
-      escape('some %s here', 'thing')
-        .should.equal('some thing here');
+	describe('argument count', () => {
+		it('should fail when too few arguments', done => {
+			try {
+				escape('%s %s', 'value');
+				return done(new Error('Did not throw'));
+			} catch (err) {
+				return done();
+			}
+		});
+		it('should fail when too many arguments', done => {
+			try {
+				escape('%s', 'value', 'value');
+				return done(new Error('Did not throw'));
+			} catch (err) {
+				return done();
+			}
+		});
+	});
 
-      escape('some %s thing %s', 'long', 'here')
-        .should.equal('some long thing here');
-    })
-  })
+	describe('%s', () => {
+		it('should format as a simple string', () => {
+			escape('some %s here', 'thing')
+				.should.equal('some thing here');
 
-  describe('%%', function(){
-    it('should format as %', function(){
-      escape('some %%', 'thing')
-        .should.equal('some %');
-    })
+			escape('some %s thing %s', 'long', 'here')
+				.should.equal('some long thing here');
+		});
+	});
 
-    it('should not eat args', function(){
-      escape('just %% a %s', 'test')
-        .should.equal('just % a test');
-    })
-  })
+	describe('%%', () => {
+		it('should format as %', () => {
+			escape('some %%')
+				.should.equal('some %');
+		});
+		it('should not eat args', () => {
+			escape('just %% a %s', 'test')
+				.should.equal('just % a test');
+		});
+	});
 
-  describe('%I', function(){
-    it('should format as an identifier', function(){
-      escape('some %I', 'foo/bar/baz')
-        .should.equal('some "foo/bar/baz"');
-    })
-  })
+	describe('%I', () => {
+		it('should format as an identifier', () => {
+			escape('some %I', 'foo/bar/baz')
+				.should.equal('some "foo/bar/baz"');
+		});
+	});
 
-  describe('%L', function(){
-    it('should format as a literal', function(){
-      escape('%L', "Tobi's")
-        .should.equal("'Tobi''s'");
-    })
-  })
+	describe('%L', () => {
+		it('should format as a literal', () => {
+			escape('%L', 'Tobi\'s')
+				.should.equal("'Tobi''s'");
+		});
+	});
 
-  describe('%Q', function(){
-    it('should format as a dollar quoted string', function(){
-      escape('%Q', "Tobi's")
-        .should.match(/\$[a-z]{1}\$Tobi's\$[a-z]\$/);
-    })
-  })
-})
+	describe('%Q', () => {
+		it('should format as a dollar quoted string', () => {
+			escape('%Q', "Tobi's")
+				.should.match(/\$\w+\$Tobi's\$\w+\$/);
+		});
+	});
+});
 
-describe('escape.string(val)', function(){
-  it('should coerce to a string', function(){
-    escape.string().should.equal('');
-    escape.string(0).should.equal('0');
-    escape.string(15).should.equal('15');
-    escape.string('something').should.equal('something');
-  })
-})
+describe('escape.string(val)', () => {
+	it('should fail on undefined', done => {
+		try {
+			escape.string(void 0);
+			return done(new Error('Did not throw'));
+		} catch (err) {
+			return done();
+		}
+	});
+	it('should coerce to a string', () => {
+		escape.string(0).should.equal('0');
+		escape.string(15).should.equal('15');
+		escape.string('something').should.equal('something');
+	});
+});
 
-describe('escape.dollarQuotedString(val)', function() {
-  it('should coerce to a dollar quoted string', function(){
-    escape.dollarQuotedString().should.equal('');
-    escape.dollarQuotedString(0).should.match(/\$[a-z]{1}\$0\$[a-z]\$/);
-    escape.dollarQuotedString(15).should.match(/\$[a-z]{1}\$15\$[a-z]\$/);
-    escape.dollarQuotedString('something').should.match(/\$[a-z]{1}\$something\$[a-z]\$/);
-  })
-})
+describe('escape.quote_string(val)', () => {
+	it('should throw on undefined', done => {
+		try {
+			escape.quote_string(void 0);
+			return done(new Error('Did not throw'));
+		} catch (err) {
+			return done();
+		}
+	});
+	it('should throw on non-string', done => {
+		try {
+			escape.quote_string(1);
+			return done(new Error('Did not throw'));
+		} catch (err) {
+			return done();
+		}
+	});
+	it('should quote a string', () => {
+		escape.quote_string('something').should.match(/'something'/);
+	});
+});
 
-describe('escape.ident(val)', function(){
-  it('should quote when necessary', function(){
-    escape.ident('foo').should.equal('foo');
-    escape.ident('_foo').should.equal('_foo');
-    escape.ident('_foo_bar$baz').should.equal('_foo_bar$baz');
-    escape.ident('test.some.stuff').should.equal('"test.some.stuff"');
-    escape.ident('test."some".stuff').should.equal('"test.""some"".stuff"');
-  })
+describe('escape.dollar_string(val)', () => {
+	it('should throw on undefined', done => {
+		try {
+			escape.dollar_string(void 0);
+			return done(new Error('Did not throw'));
+		} catch (err) {
+			return done();
+		}
+	});
+	it('should throw on non-string', done => {
+		try {
+			escape.dollar_string(1);
+			return done(new Error('Did not throw'));
+		} catch (err) {
+			return done();
+		}
+	});
+	it('should dollar-quote a string', () => {
+		escape.dollar_string('something').should.match(/\$\w+\$something\$\w+\$/);
+	});
+});
 
-  it('should quote reserved words', function(){
-    escape.ident('desc').should.equal('"desc"');
-    escape.ident('join').should.equal('"join"');
-    escape.ident('cross').should.equal('"cross"');
-  })
+describe('escape.ident(val)', () => {
+	it('should throw on undefined', done => {
+		try {
+			escape.ident(void 0);
+			return done(new Error('Did not throw'));
+		} catch (err) {
+			return done();
+		}
+	});
+	it('should throw on null', done => {
+		try {
+			escape.ident(null);
+			return done(new Error('Did not throw'));
+		} catch (err) {
+			return done();
+		}
+	});
+	it('should quote when necessary', () => {
+		escape.ident('foo').should.equal('foo');
+		escape.ident('_foo').should.equal('_foo');
+		escape.ident('_foo_bar$baz').should.equal('_foo_bar$baz');
+		escape.ident('test.some.stuff').should.equal('"test.some.stuff"');
+		escape.ident('test."some".stuff').should.equal('"test.""some"".stuff"');
+	});
+	it('should quote reserved words', () => {
+		escape.ident('desc').should.equal('"desc"');
+		escape.ident('join').should.equal('"join"');
+		escape.ident('cross').should.equal('"cross"');
+	});
+});
 
-  it('should throw when null', function(done){
-    try {
-      escape.ident();
-    } catch (err) {
-      assert(err.message == 'identifier required');
-      done();
-    }
-  })
-})
-
-describe('escape.literal(val)', function(){
-  it('should return NULL for null', function(){
-    escape.literal(null).should.equal('NULL');
-    escape.literal(undefined).should.equal('NULL');
-  })
-
-  it('should return a tuple for arrays', function(){
-    escape.literal(["foo", "bar", "baz' DROP TABLE foo;"]).should.equal("('foo', 'bar', 'baz'' DROP TABLE foo;')");
-  })
-
-  it('should quote', function(){
-    escape.literal('hello world').should.equal("'hello world'");
-  })
-
-  it('should escape quotes', function(){
-    escape.literal("O'Reilly").should.equal("'O''Reilly'");
-  })
-
-  it('should escape backslashes', function(){
-    escape.literal('\\whoop\\').should.equal("E'\\\\whoop\\\\'");
-  })
-})
-
+describe('escape.literal(val)', () => {
+	it('should throw on undefined', done => {
+		try {
+			escape.literal(void 0);
+			return done(new Error('Did not throw'));
+		} catch (err) {
+			return done();
+		}
+	});
+	it('should return NULL for null', () => {
+		escape.literal(null).should.equal('NULL');
+	});
+	it('should return a tuple for arrays', () => {
+		escape.literal(["foo", "bar", "baz' DROP TABLE foo;"]).should.equal("('foo','bar','baz'' DROP TABLE foo;')");
+	});
+	it('should quote', () => {
+		escape.literal('hello world').should.equal("'hello world'");
+	});
+	it('should escape quotes', () => {
+		escape.literal("O'Reilly").should.equal("'O''Reilly'");
+	});
+	it('should escape backslashes', () => {
+		escape.literal('\\whoop\\').should.equal("E'\\\\whoop\\\\'");
+	});
+});
