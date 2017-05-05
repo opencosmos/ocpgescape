@@ -1,7 +1,7 @@
 {
-  "name": "pg-escape",
+  "name": "ocpgescape",
   "version": "0.1.0",
-  "repository": "segmentio/pg-escape",
+  "repository": "opencosmos/ocpgescape",
   "description": "escape postgres queries which do not support stored procedures",
   "keywords": [
     "pg",
