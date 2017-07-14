@@ -75,12 +75,13 @@ const quote_string = val => {
 	return `${prefix}'${val.replace(/'/g, '\'\'').replace(/\\/g, '\\\\')}'`;
 };
 
-const literal = val => {
+const _literal = (val, in_array = false) => {
+	const literal = x => _literal(x, in_array);
 	check_arg(val);
 	if (val === null) {
 		return 'NULL';
 	} else if (Array.isArray(val)) {
-		return `(${val.map(literal).join(',')})`;
+		return `${in_array ? '' : 'ARRAY'}[${val.map(x => _literal(x, true)).join(', ')}]`;
 	} else if (typeof val === 'object') {
 		return literal(JSON.stringify(val));
 	} else {
@@ -95,6 +96,8 @@ const literal = val => {
 		}
 	}
 };
+
+const literal = x => _literal(x, false);
 
 const format = (fmt, ...args) => {
 	check_arg(fmt);

@@ -1,6 +1,6 @@
 {
   "name": "ocpgescape",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "repository": "opencosmos/ocpgescape",
   "description": "escape postgres queries which do not support stored procedures",
   "keywords": [
@@ -14,8 +14,8 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "mocha": "*",
-    "should": "*"
+    "chai": "^4.1.0",
+    "mocha": "*"
   },
   "license": "MIT"
 }
