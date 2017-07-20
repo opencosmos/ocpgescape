@@ -64,7 +64,7 @@ describe('escape(fmt, ...)', () => {
 	describe('%Q', () => {
 		it('should format as a dollar quoted string', () => {
 			expect(escape('%Q', "Tobi's"))
-				.to.match(/\$\w+\$Tobi's\$\w+\$/);
+				.to.match(/\$\w*\$Tobi's\$\w*\$/);
 		});
 	});
 });
@@ -126,7 +126,13 @@ describe('escape.dollar_string(val)', () => {
 	});
 	it('should dollar-quote a string', () => {
 		expect(escape.dollar_string('something'))
-			.to.match(/\$\w+\$something\$\w+\$/);
+			.to.match(/\$\w*\$something\$\w*\$/);
+	});
+	it('should use tag which is valid as unquoted identifier', () => {
+		for (let i = 0; i < 1000; ++i) {
+			expect(escape.dollar_string('something'))
+				.to.match(/\$([a-z]\w*)?\$something\$([a-z]\w*)?\$/i);
+		}
 	});
 });
 

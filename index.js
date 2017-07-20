@@ -50,17 +50,23 @@ const dollar_string = val => {
 	}
 	check_string(val);
 	/* Generate random tag for quote markers */
-	const gen_tag = len => `$${Math.random().toString(36).substr(2, len)}$`;
-	let tag;
+	const gen_tag = len => {
+		let res;
+		do {
+			res = Math.random().toString(36).substr(2, len);
+		} while (/^[a-z]/i.test(res));
+		return `$${res}$`;
+	};
+	let tag = '$$';
 	/*
 	 * If data string contains the tag, generate a new one and increase the
 	 * tag length (limited by the maximum fractional digits emitted by
 	 * Number.prototype.toString)
 	 */
-	let len = 1;
-	do {
-		tag = gen_tag(len++);
-	} while (val.indexOf(tag) !== -1);
+	let len = 0;
+	while (val.indexOf(tag) !== -1) {
+		tag = gen_tag(++len);
+	}
 	return `${tag}${val}${tag}`;
 };
 

@@ -1,6 +1,6 @@
 {
   "name": "ocpgescape",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "repository": "opencosmos/ocpgescape",
   "description": "escape postgres queries which do not support stored procedures",
   "keywords": [
